@@ -1,99 +1,147 @@
-# C-memory
-
 ````markdown
-# 🧠 Simple Custom Memory Allocator in C
+# 🧠 Low-Level Memory Management in C
 
-This project demonstrates a **basic implementation of `malloc()` and `free()`** using low-level system calls like `sbrk()`. It serves as an educational tool to understand how dynamic memory allocation can be manually managed in C.
+This repository demonstrates two fundamental low-level memory operations in C:
+
+1. A **custom memory allocator** that mimics `malloc()` and `free()`
+2. A **custom memory copy** function similar to `memcpy()`
+
+These projects are built for **educational purposes**, offering a deeper understanding of how C handles dynamic memory and byte-wise memory operations internally.
 
 ---
 
 ## 📁 Files
 
-- `mymalloc.c`: Contains the full implementation of custom `malloc` and `free`, along with a test example.
+| File Name      | Description                                    |
+|----------------|------------------------------------------------|
+| `mymalloc.c`   | Custom memory allocator using `sbrk()`         |
+| `my_memcopy.c` | Byte-wise implementation of `memcpy()`         |
 
 ---
 
-## 🔧 How It Works
+## 1️⃣ Custom Memory Allocator (`mymalloc.c`)
 
-This program mimics the behavior of the C Standard Library’s dynamic memory allocator using a **linked list of metadata blocks**.
+### 🔧 How It Works
+
+This program mimics the behavior of the C Standard Library’s `malloc()` and `free()` using a **linked list of memory blocks** and the `sbrk()` system call.
 
 ### ✅ Features:
-- Allocates memory using `sbrk()`
-- Reuses previously freed blocks if large enough
-- Maintains a simple metadata structure to track block size, status, and links
-- Detects double frees with `assert()`
+- Allocates memory dynamically
+- Tracks free blocks for reuse
+- Stores metadata before each block
+- Detects double-free issues
 
----
+### 🧩 Structure
 
-## 📄 Structure of a Memory Block
-
-Each allocated block contains:
 ```c
 struct block_metadata {
-    size_t size;                  // Size of the user memory
-    struct block_metadata* next; // Pointer to next block
-    bool free;                    // Is this block free?
+    size_t size;
+    struct block_metadata* next;
+    bool free;
 };
 ````
 
-User memory begins right after this metadata in memory.
-
----
-
-## 🔍 Example Usage
+### 🔍 Example Usage
 
 ```c
-int* addr = (int*)malloc(8 * sizeof(int));
-for (int i = 0; i < 8; i++) {
-    addr[i] = i;
-    printf("addr[%d]: %d\n", i, addr[i]);
-}
-free(addr);
+int* arr = (int*)malloc(8 * sizeof(int));
+for (int i = 0; i < 8; i++) arr[i] = i;
+free(arr);
 ```
+
+### 🚫 Limitations
+
+* No block splitting or merging
+* No thread safety
+* Memory is not released to the OS
 
 ---
 
-## 🚫 Limitations
+## 2️⃣ Custom Memory Copy (`my_memcopy.c`)
 
-* No memory splitting (if block is larger than needed)
-* No coalescing (adjacent free blocks aren't merged)
-* No thread safety
-* Memory is never actually returned to the OS
+### 🔧 How It Works
+
+This function replicates `memcpy()` by copying memory byte-by-byte using **void pointers** and **casting to `char*`** for generalization.
+
+### ✅ Features:
+
+* Works with any data type
+* Byte-level shallow copy
+* Simple and portable logic
+
+### 🔍 Example Usage
+
+```c
+int src[] = {1, 2, 3, 4}, dest[5] = {};
+my_memcopy(dest, src, sizeof(src));  // Output: 1 2 3 4
+
+char str1[] = {'a','b','c','d'}, str2[5] = {};
+my_memcopy(str2, str1, sizeof(str1));  // Output: a b c d
+```
+
+### 🚫 Limitations
+
+* No deep copy (not for pointer-based structs)
+* No performance optimizations
+* No bounds checking
 
 ---
 
 ## 🧠 Learning Objectives
 
-* Understand low-level memory management
-* Explore how malloc/free can be implemented manually
-* Study metadata handling and pointer arithmetic in C
+* Understand the inner workings of `malloc()` and `free()`
+* Use `sbrk()` to manage memory manually
+* Learn how to copy memory using pointer arithmetic
+* Explore shallow vs deep copy
+* Practice with low-level memory access and management in C
+
+---
+
+## 📌 Build & Run
+
+```bash
+# Compile and run memory allocator
+gcc mymalloc.c -o allocator
+./allocator
+
+# Compile and run memory copy
+gcc my_memcopy.c -o memcopy
+./memcopy
+```
+
+---
+
+## ✅ Sample Output
+
+```
+# From memory copy program:
+1 2 3 4
+a b c d
+
+# From memory allocator program:
+addr[0]: 0
+addr[1]: 1
+...
+addr[7]: 7
+```
 
 ---
 
 ## ⚠️ Disclaimer
 
-This is **not production-safe** and is meant for **learning purposes only**. For real applications, always use the system-provided memory management.
+These implementations are for **educational purposes only**. They are not production-ready and lack many of the safety, performance, and system integration features required in real-world applications.
 
 ---
 
 ## 📚 References
 
 * [man sbrk](https://man7.org/linux/man-pages/man2/sbrk.2.html)
-* CS courses on operating systems and memory management
-
----
-
-## 📌 To Run
-
-```bash
-gcc main.c -o allocator
-./allocator
-```
+* [C Library memcpy()](https://en.cppreference.com/w/c/string/byte/memcpy)
+* Operating systems & system programming courses
 
 ---
 
 ## 🧑‍💻 Author
 
-Indra MVS
+**Indra MVS**
 [GitHub Profile](https://github.com/Indramvs)
-
